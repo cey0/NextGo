@@ -1,28 +1,22 @@
 package main
 
 import (
-	"log"
-	"os"
+    "api/pkg/db"
+    "api/pkg/router"
+    "log"
 )
 
 func main() {
-	// Initialize database
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
+    // Initialize the database connection using the config file
+    err := db.InitDB("config.yaml")
+    if err != nil {
+        log.Fatalf("Failed to initialize database: %v", err)
+    }
+    defer db.CloseDB()
 
-	// Initialize the database connection
-	err := db.InitDB(host, port, user, password, dbname)
-	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
-	}
-	defer db.CloseDB()
+    // Setup router
+    r := router.SetupRouter()
 
-	// Setup router
-	r := router.SetupRouter()
-
-	// Start the server
-	r.Run(":8080") // or whatever port you prefer
+    // Start the server
+    r.Run(":8080") // or whatever port you prefer
 }
