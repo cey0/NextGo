@@ -1,0 +1,105 @@
+package handlers
+
+import (
+	"library/pkg/db"
+	"library/pkg/models"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+// GetBooks returns all books.
+func GetBooks(c *gin.Context) {
+	books, err := models.GetAllBooks(db.DB)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch books"})
+		return
+	}
+	c.JSON(http.StatusOK, books)
+}
+
+// GetBook returns a single book by ID.
+func GetBook(c *gin.Context) {
+	id := c.Param("id")
+	bookID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid book ID"})
+		return
+	}
+	book, err := models.GetBookByID(db.DB, uint(bookID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		return
+	}
+	c.JSON(http.StatusOK, book)
+}
+
+// CreateBook creates a new book.
+func CreateBook(c *gin.Context) {
+	var newBook models.Book
+	if err := c.ShouldBindJSON(&newBook); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := models.CreateBook(db.DB, newBook)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, newBook)
+}
+
+// UpdateBook updates an existing book.
+func UpdateBook(c *gin.Context) {
+	id := c.Param("id")
+	bookID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid book ID"})
+		return
+	}
+	var updatedBook models.Book
+	if err := c.ShouldBindJSON(&updatedBook); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	book, err := models.GetBookByID(db.DB, uint(bookID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		return
+	}
+
+	// Update book data
+	book.Title = updatedBook.Title
+	book.Author = updatedBook.Author
+	book.Year = updatedBook.Year
+
+	err = models.UpdateBook(db.DB, book)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, book)
+}
+
+// DeleteBook deletes a book by ID.
+func DeleteBook(c *gin.Context) {
+	id := c.Param("id")
+	bookID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid book ID"})
+		return
+	}
+	book, err := models.GetBookByID(db.DB, uint(bookID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		return
+	}
+	err = models.DeleteBook(db.DB, book)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
+}

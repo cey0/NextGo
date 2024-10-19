@@ -1,0 +1,37 @@
+# Makefile for automating Docker and app setup
+
+# Start Docker containers
+start:
+	@echo "Starting services..."
+	docker-compose up -d
+
+# Stop Docker containers
+stop:
+	@echo "Stopping services..."
+	docker-compose down
+
+# Rebuild and restart the Go app container
+restart:
+	@echo "Restarting services..."
+	docker-compose up --build -d
+
+# Initialize the Go module and tidy dependencies
+init:
+	@echo "Initializing Go module..."
+	go mod init your_project_name || true
+	go mod tidy
+
+# Build the Go application
+build:
+	@echo "Building the Go app..."
+	go build -o app .
+
+# Run the Go application
+run:
+	@echo "Running the Go app..."
+	go run main.go
+
+# Clean up the generated files
+clean:
+	@echo "Cleaning up..."
+	rm -f app

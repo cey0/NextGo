@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: GONEX
+    ports:
+      - "5321:5432"  # Map PostgreSQL port 5432 to local port 5321
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # Persist the PostgreSQL data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres  # Wait for PostgreSQL to be ready
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: GONEX
+    ports:
+      - "8080:8080"  # Expose the Go app on port 8080
+    command: ["./app"]
+
+volumes:
+  pgdata:

@@ -1,0 +1,47 @@
+package models
+
+import (
+	"github.com/go-gorp/gorp"
+)
+
+// Book struct represents a book model.
+type Book struct {
+	ID     uint   `db:"id"`
+	Title  string `db:"title"`
+	Author string `db:"author"`
+	Year   int    `db:"year"`
+}
+
+// GetAllBooks fetches all books from the database.
+func GetAllBooks(db *gorp.DbMap) ([]Book, error) {
+	var books []Book
+	_, err := db.Select(&books, "SELECT * FROM books")
+	return books, err
+}
+
+// GetBookByID fetches a book by its ID.
+func GetBookByID(db *gorp.DbMap, id uint) (*Book, error) {
+	var book Book
+	err := db.SelectOne(&book, "SELECT * FROM books WHERE id=$1", id)
+	if err != nil {
+		return nil, err
+	}
+	return &book, nil
+}
+
+// CreateBook inserts a new book into the database.
+func CreateBook(db *gorp.DbMap, book Book) error {
+	return db.Insert(&book)
+}
+
+// UpdateBook updates an existing book in the database.
+func UpdateBook(db *gorp.DbMap, book *Book) error {
+	_, err := db.Update(book)
+	return err
+}
+
+// DeleteBook deletes a book from the database by ID.
+func DeleteBook(db *gorp.DbMap, book *Book) error {
+	_, err := db.Delete(book)
+	return err
+}

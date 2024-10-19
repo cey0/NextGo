@@ -1,0 +1,63 @@
+package db
+
+import (
+	"database/sql"
+	"fmt"
+	"library/pkg/models"
+
+	"github.com/go-gorp/gorp"
+	_ "github.com/lib/pq" // PostgreSQL driver
+)
+
+// DB represents the database connection
+var DB *gorp.DbMap
+
+// RegisterModels registers all the models in the DbMap
+func RegisterModels(dbmap *gorp.DbMap) {
+	// Register the Book model
+	dbmap.AddTableWithName(models.Book{}, "books").SetKeys(true, "ID")
+}
+
+// InitDB initializes the Gorp database connection and registers models
+func InitDB(host, port, user, password, dbname string) error {
+	// Data Source Name (DSN)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	// Open the database connection
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("error connecting to database: %w", err)
+	}
+
+	// Create a DbMap using gorp
+	DB = &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+
+	// Register models with the DB map
+	RegisterModels(DB)
+
+	// Create tables if they don't exist
+	err = DB.CreateTablesIfNotExists()
+	if err != nil {
+		return fmt.Errorf("error creating tables: %w", err)
+	}
+
+	// Verify the connection
+	if err = db.Ping(); err != nil {
+		return fmt.Errorf("error pinging database: %w", err)
+	}
+
+	fmt.Println("Database connection established with Gorp")
+	return nil
+}
+
+// CloseDB closes the database connection
+func CloseDB() {
+	if DB != nil && DB.Db != nil {
+		if err := DB.Db.Close(); err != nil {
+			fmt.Printf("Error closing database: %v\n", err)
+		} else {
+			fmt.Println("Database connection closed")
+		}
+	}
+}
