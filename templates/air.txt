@@ -1,14 +1,10 @@
-# .air.toml
-# Config file for air
-root = "."
-tmp_dir = "tmp"                # Temporary directory
-include_ext = ["go", "tmpl"]   # File extensions to watch
-exclude_dir = ["assets", "vendor", "tmp"] # Directories to exclude
-build = {
-  cmd = "go build -o ./tmp/main ./cmd/main.go" # Build command
-  bin = "./tmp/main"                          # Binary to run
-  working_dir = "."                          # Working directory
-}
-watch = {
-  interval = "200ms"                        # Watch interval
-}
+# Config file for Air
+
+[build]
+cmd = "go build -o ./tmp/main ./cmd"
+bin = "./tmp/main"
+full_bin = "APP_ENV=dev ./tmp/main"
+log = "air.log"
+
+[log]
+level = "debug"
