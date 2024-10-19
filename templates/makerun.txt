@@ -1,5 +1,3 @@
-# Makefile for automating Docker and app setup
-
 # Start Docker containers
 start:
 	@echo "Starting services..."
@@ -24,12 +22,12 @@ init:
 # Build the Go application
 build:
 	@echo "Building the Go app..."
-	go build -o app .
+	go build -o app ./cmd
 
-# Run the Go application
+# Run the Go application using Air for live reloading
 run:
-	@echo "Running the Go app..."
-	go run main.go
+	@echo "Running the Go app with live reloading..."
+	air
 
 # Clean up the generated files
 clean:
