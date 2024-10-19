@@ -1,15 +1,28 @@
 package db
 
 import (
+	"api/pkg/models"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/go-gorp/gorp"
 	_ "github.com/lib/pq" // PostgreSQL driver
+	"gopkg.in/yaml.v2"
 )
 
 // DB represents the database connection
 var DB *gorp.DbMap
+
+type Config struct {
+	Database struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		User     string `yaml:"user"`
+		Password string `yaml:"password"`
+		Name     string `yaml:"name"`
+	} `yaml:"database"`
+}
 
 // RegisterModels registers all the models in the DbMap
 func RegisterModels(dbmap *gorp.DbMap) {
@@ -17,11 +30,32 @@ func RegisterModels(dbmap *gorp.DbMap) {
 	dbmap.AddTableWithName(models.Book{}, "books").SetKeys(true, "ID")
 }
 
+// LoadConfig loads configuration from a YAML file
+func LoadConfig(filename string) (*Config, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("error reading config file: %w", err)
+	}
+
+	var config Config
+	if err = yaml.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("error unmarshaling config: %w", err)
+	}
+
+	return &config, nil
+}
+
 // InitDB initializes the Gorp database connection and registers models
-func InitDB(host, port, user, password, dbname string) error {
+func InitDB(configFile string) error {
+	// Load the configuration
+	config, err := LoadConfig(configFile)
+	if err != nil {
+		return err
+	}
+
 	// Data Source Name (DSN)
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		config.Database.Host, config.Database.Port, config.Database.User, config.Database.Password, config.Database.Name)
 
 	// Open the database connection
 	db, err := sql.Open("postgres", dsn)

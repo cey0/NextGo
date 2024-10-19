@@ -1,0 +1,6 @@
+database:
+  host: "localhost"
+  port: "5321"
+  user: "postgres"
+  password: "postgres"
+  name: "GONEX"
