@@ -26,7 +26,7 @@ services:
       DB_NAME: GONEX
     ports:
       - "8080:8080"  # Expose the Go app on port 8080
-    command: ["./app"]
+    command: ["air"]  # Run Air directly
 
 volumes:
   pgdata:
